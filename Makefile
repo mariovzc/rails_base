@@ -1,5 +1,11 @@
 PROJECT_NAME=rails_docker
 
+up:
+	docker-compose up --build
+
+exec:
+	docker-compose exec web sh
+
 build:
 	docker build -t ${PROJECT_NAME} .
 
