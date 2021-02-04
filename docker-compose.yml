@@ -1,8 +1,29 @@
-version: '3.0'
+version: '3'
+
 services:
-  web:
+  webpack:
     build: .
+    environment:
+      WEBPACKER_DEV_SERVER_HOST: webpack
+    command: ./bin/webpack-dev-server --inline true
     volumes:
-      - .:/app
+      - '.:/app'
     ports:
-      - "3000:3000"
+      - '3035:3035'
+
+  web:
+    depends_on:
+      - 'webpack'
+    build: .
+    tty: true
+    stdin_open: true
+    ports:
+      - '3000:3000'
+    entrypoint: rails s -b 0.0.0.0
+    volumes:
+      - '.:/app'
+    environment:
+      WEBPACKER_DEV_SERVER_HOST: webpack
+
+volumes:
+  webpack:
