@@ -1,28 +1,31 @@
-# Dockerfile
-# Use ruby image to build our own image
-FROM ruby:2.7
+FROM ruby:3.3.0-slim
 
-RUN apt-get update && apt-get install apt-transport-https
+# Instalar dependencias del sistema necesarias para la compilación de sqlite3
+RUN apt-get update -qq && apt-get install -y \
+    build-essential \
+    libsqlite3-dev \
+    nodejs \
+    yarn \
+    git \
+    sqlite3 \
+    bash \
+    libffi-dev
 
-RUN curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add - \
-  && echo "deb https://dl.yarnpkg.com/debian/ stable main" | tee /etc/apt/sources.list.d/yarn.list \
-  && curl -sL https://deb.nodesource.com/setup_8.x | bash -
+# Instalar bundler y rails
+RUN gem install bundler -v 2.5.6 && \
+    gem install rails -v 7.1.3
 
-RUN apt-get update && \
-  apt-get install -y \
-  yarn \
-  nodejs
+# Establecer el directorio de trabajo
+WORKDIR /app
 
-ENV APP_HOME /app
-RUN mkdir $APP_HOME
-WORKDIR $APP_HOME
+# Copiar los archivos Gemfile y Gemfile.lock
+COPY Gemfile Gemfile.lock ./
 
-ADD Gemfile* $APP_HOME/
-RUN bundle update --bundler
+# Ejecutar bundle install
 RUN bundle install
 
+# Exponer el puerto 3000 para Rails
 EXPOSE 3000
 
-ADD . $APP_HOME
-
-ENTRYPOINT [ "puma", "-C", "config/puma.rb" ]
+# Comando por defecto
+CMD ["bash"]
